@@ -38,6 +38,8 @@ Email Newsletters         Calendar Events         Monthly Markdown
                           Browser (instant)
 ```
 
+![Morning Ritual Architecture Flow](morning-ritual-flow.png)
+
 **Data Pipeline:**
 - Gmail MCP fetches newsletters from Forum tab (category:forums, newer_than:1d)
 - Google Calendar MCP fetches today + next 7 days
