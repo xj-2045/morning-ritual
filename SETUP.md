@@ -190,15 +190,6 @@ Edit `.claude/skills/morning/SKILL.md`:
 - Chrome startup time depends on OS/hardware
 - Pre-open Chrome before running `/morning` (saves ~3–5s)
 
-## Security Notes
-
-- ✓ **No credentials in code** — all API keys via `.env`
-- ✓ **No credential storage** — uses MCP OAuth (Gmail, Google Calendar)
-- ✓ **No credential exposure** — .env excluded from GitHub
-- ✓ **No sensitive data in output** — HTML is static, contains only your own data
-- ✓ **Safe to share** — all code and config (except .env) can be committed to GitHub
-- ✓ **Privacy-first** — never share .env or personal markdown files
-
 ## Next Steps
 
 1. Run `/morning` daily at 7:00 AM (can be automated via cron)
