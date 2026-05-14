@@ -185,14 +185,6 @@ Same architecture extends to:
 - **Monthly forecasting** — review domain goals, adjust quarterly targets
 - **Quarterly planning** — assess progress toward annual vision
 
-## Security & Privacy
-
-✅ **No credentials in code** — all API keys via `.env`  
-✅ **No credential storage** — uses MCP OAuth  
-✅ **Safe to share** — all code can be committed to GitHub  
-✅ **.env excluded** — .gitignore prevents accidental leaks  
-✅ **Privacy-first** — no personal data in examples or documentation  
-
 ## Troubleshooting
 
 **Newsletter digest fails:**

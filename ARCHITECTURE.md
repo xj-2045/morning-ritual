@@ -283,31 +283,3 @@ calendar-projects/morning/morning-YYYY-MM-DD.html # Archive
 4. **Async subagent spawning**: Don't wait for full batch before spawning next (save ~5s)
 5. **Weekly/Monthly rituals**: Same architecture, extends to summary/forecasting
 
----
-
-## Security Notes
-
-- **No credentials in code**: All API keys via environment variables
-- **No credential storage**: Uses MCP OAuth (Gmail, Google Calendar)
-- **Resend API key**: Stored in .env, never logged or exposed
-- **Month markdown**: Plain text, contains task names only (no sensitive data)
-- **Output HTML**: Static file, no embedded credentials or secrets
-- **GitHub-safe**: All files can be committed except `.env` (add to .gitignore)
-
----
-
-## Privacy & Personal Data
-
-This system is designed to protect your personal information:
-
-- **No personal details in code** — all examples use generic domain names (Domain 1, Domain 2, etc.)
-- **No email addresses hardcoded** — configured via `.env` (excluded from version control)
-- **No file paths exposed** — all paths are relative or configurable
-- **No task content published** — month markdown is never committed to version control
-- **No credentials exposed** — .env is in .gitignore by default
-
-When sharing this codebase:
-- Never commit `.env` file
-- Never commit personal month markdown files
-- Never include example tasks with sensitive information
-- Always use generic domain names in documentation
