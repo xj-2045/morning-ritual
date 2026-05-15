@@ -23,30 +23,6 @@ The `/morning` ritual orchestrates:
 
 **Result: 60–80 seconds. Zero manual intervention. ~40 hours/year reclaimed.**
 
-## How It Works
-
-```
-Email Newsletters         Calendar Events         Monthly Markdown
-     (19)        ───→       (7 days)       ───→    (domain tasks)
-        │                      │                       │
-        └──────────────────────┼───────────────────────┘
-                               ↓
-                    Python Script (100ms)
-                               ↓
-                    morning-ritual.html
-                               ↓
-                          Browser (instant)
-```
-
-**Data Pipeline:**
-- Gmail MCP fetches newsletters from Forum tab (category:forums, newer_than:1d)
-- Google Calendar MCP fetches today + next 7 days
-- Month markdown auto-detected from system date (e.g., `May 2026.md`)
-- Python script parses markdown → builds kanban matrix (7 domains × 3 weeks)
-- Extracts newsletter HTML → embeds in output
-- Generates complete HTML with fresh timestamp
-- All data baked in → opens instantly with zero additional API calls
-
 ## System Architecture
 
 ```mermaid
@@ -216,8 +192,6 @@ All five sections merge into single 40KB `morning-ritual.html` that opens in bro
 - Browser opens and renders instantly
 - Timestamp in header proves data freshness
 
-See [DATA_ARCHITECTURE.md](DATA_ARCHITECTURE.md) for detailed component breakdown and data platform documentation.
-
 ## Quick Start
 
 ### Prerequisites
@@ -282,8 +256,6 @@ See [DATA_ARCHITECTURE.md](DATA_ARCHITECTURE.md) for detailed component breakdow
 - **Layer 2**: Skills & MCP servers (newsletter-digest, Google Calendar, Gmail)
 - **Layer 3**: Python script handles HTML generation
 
-**See [ARCHITECTURE.md](ARCHITECTURE.md)** for complete technical reference.
-
 ## Performance
 
 | Phase | Duration | Note |
@@ -297,9 +269,6 @@ See [DATA_ARCHITECTURE.md](DATA_ARCHITECTURE.md) for detailed component breakdow
 ## Key Documents
 
 - **[SETUP.md](SETUP.md)** — Step-by-step configuration guide
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — Technical deep dive (kanban algorithm, subagent batching, performance breakdown)
-- **[DATA_ARCHITECTURE.md](DATA_ARCHITECTURE.md)** — Data sources, platforms, and processing pipeline with Mermaid diagram
-- **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)** — Business value and ROI
 
 ## Files
 
@@ -307,8 +276,6 @@ See [DATA_ARCHITECTURE.md](DATA_ARCHITECTURE.md) for detailed component breakdow
 .
 ├── README.md                          # This file
 ├── SETUP.md                           # Configuration guide
-├── ARCHITECTURE.md                    # Technical reference
-├── EXECUTIVE_SUMMARY.md               # Business value
 ├── .gitignore                         # Exclude .env, credentials
 └── .claude/skills/morning/
     ├── SKILL.md                       # Skill definition
