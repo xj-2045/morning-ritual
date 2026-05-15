@@ -49,6 +49,78 @@ Email Newsletters         Calendar Events         Monthly Markdown
 - Generates complete HTML with fresh timestamp
 - All data baked in → opens instantly with zero additional API calls
 
+## System Architecture
+
+```mermaid
+flowchart TB
+    user["User invokes<br/>/morning"]
+    skill["/morning Skill<br/>(Orchestrator)"]
+    gmail_mcp["Gmail MCP<br/>search_threads"]
+    calendar_mcp["Calendar MCP<br/>list_events"]
+    newsletters[("Gmail<br/>Forum Tab<br/>19+ newsletters")]
+    events[("Calendar<br/>Next 7 days")]
+    markdown[("Month Markdown<br/>May 2026.md")]
+    digest_skill["/newsletter-digest<br/>Skill"]
+    subagents["Parallel<br/>Subagents"]
+    temp_storage[(".tmp/digest.json<br/>Analyzed results")]
+    python["generate_morning_html.py<br/>Render HTML"]
+    html[("morning-ritual.html<br/>40KB static")]
+    browser["Browser<br/>(Display)"]
+    resend["Resend API<br/>(Email)"]
+    inbox["Email Inbox<br/>(Delivery)"]
+    user -->|"invoke"| skill
+    skill -->|"fetch"| gmail_mcp
+    skill -->|"fetch"| calendar_mcp
+    skill -->|"read"| markdown
+    gmail_mcp -->|"query"| newsletters
+    calendar_mcp -->|"query"| events
+    skill -->|"delegate"| digest_skill
+    newsletters -->|"feed"| digest_skill
+    digest_skill -->|"spawn"| subagents
+    subagents -->|"write"| temp_storage
+    temp_storage -->|"read"| python
+    events -->|"merge"| python
+    markdown -->|"parse"| python
+    python -->|"generate"| html
+    html -->|"open"| browser
+    digest_skill -->|"send email"| resend
+    resend -->|"deliver"| inbox
+
+    classDef parent fill:#1a73e8,stroke:#1a73e8,color:#fff
+    classDef subagent fill:#e8f0fe,stroke:#1a73e8,color:#202124
+    classDef storage fill:#fef7e0,stroke:#e37400,color:#202124
+    classDef external fill:#e6f4ea,stroke:#137333,color:#202124
+    class user parent
+    class skill parent
+    class gmail_mcp external
+    class calendar_mcp external
+    class newsletters external
+    class events external
+    class markdown storage
+    class digest_skill parent
+    class subagents subagent
+    class temp_storage storage
+    class python parent
+    class html parent
+    class browser parent
+    class resend external
+    class inbox external
+```
+
+**Data Flow**:
+- **Entry**: User invokes `/morning` skill
+- **Fetch**: Parallel fetch from Gmail (forums), Calendar (next 7 days), and Month Markdown
+- **Analyze**: `/newsletter-digest` skill spawns subagents to analyze each email in parallel
+- **Merge**: Python script combines newsletter digest JSON, calendar events, and kanban markdown into single HTML
+- **Output**: Static 40KB HTML file with dark gradient header, session recap, calendar, kanban board, and newsletter table
+- **Display**: File opened in default browser for instant viewing (zero additional API calls)
+- **Archive**: Dated copy saved to `calendar-projects/morning/morning-YYYY-MM-DD.html` for history
+- **Email**: Newsletter digest also sent to inbox via Resend API
+
+**Color Legend**: 🔵 Blue = Orchestrator | 🔷 Light Blue = Subagents (parallel workers) | 🟡 Yellow = Storage (data sources, files) | 🟢 Green = External services (MCP, API, delivery)
+
+See [DATA_ARCHITECTURE.md](DATA_ARCHITECTURE.md) for detailed component breakdown and data platform documentation.
+
 ## Quick Start
 
 ### Prerequisites
