@@ -38,8 +38,6 @@ Email Newsletters         Calendar Events         Monthly Markdown
                           Browser (instant)
 ```
 
-![Morning Ritual Architecture Flow](morning-ritual-flow.png)
-
 **Data Pipeline:**
 - Gmail MCP fetches newsletters from Forum tab (category:forums, newer_than:1d)
 - Google Calendar MCP fetches today + next 7 days
@@ -54,44 +52,56 @@ Email Newsletters         Calendar Events         Monthly Markdown
 ```mermaid
 flowchart TB
     user["User invokes<br/>/morning"]
-    skill["/morning Skill<br/>(Orchestrator)"]
+    morning_skill["/morning Skill<br/>(Orchestrator)"]
     gmail_mcp["Gmail MCP<br/>search_threads"]
     calendar_mcp["Calendar MCP<br/>list_events"]
-    newsletters[("Gmail<br/>Forum Tab<br/>19+ newsletters")]
-    events[("Calendar<br/>Next 7 days")]
-    markdown[("Month Markdown<br/>May 2026.md")]
+    newsletters["Gmail Forum Tab<br/>19+ newsletters"]
+    events["Calendar Events<br/>Next 7 days"]
+    markdown["Month Markdown<br/>May 2026.md"]
     digest_skill["/newsletter-digest<br/>Skill"]
-    subagents["Parallel<br/>Subagents"]
-    temp_storage[(".tmp/digest.json<br/>Analyzed results")]
-    python["generate_morning_html.py<br/>Render HTML"]
-    html[("morning-ritual.html<br/>40KB static")]
+    subagents["Parallel<br/>Subagents<br/>(5-7 batch)"]
+    digest_json[".tmp/digest.json<br/>Analyzed results"]
+    python["generate_morning_html.py"]
+    session_recap["Session Recap<br/>📊 Topics & Tokens"]
+    calendar_section["Calendar Section<br/>📅 Today + Next 7d"]
+    kanban_section["Kanban Board<br/>📊 7 Domains × 3wk"]
+    digest_section["Newsletter Digest<br/>📰 19+ emails"]
+    html["morning-ritual.html<br/>40KB static"]
     browser["Browser<br/>(Display)"]
-    resend["Resend API<br/>(Email)"]
+    resend["Resend API"]
     inbox["Email Inbox<br/>(Delivery)"]
-    user -->|"invoke"| skill
-    skill -->|"fetch"| gmail_mcp
-    skill -->|"fetch"| calendar_mcp
-    skill -->|"read"| markdown
+    user -->|"invoke"| morning_skill
+    morning_skill -->|"fetch"| gmail_mcp
+    morning_skill -->|"fetch"| calendar_mcp
+    morning_skill -->|"read"| markdown
     gmail_mcp -->|"query"| newsletters
     calendar_mcp -->|"query"| events
-    skill -->|"delegate"| digest_skill
+    morning_skill -->|"delegate"| digest_skill
     newsletters -->|"feed"| digest_skill
     digest_skill -->|"spawn"| subagents
-    subagents -->|"write"| temp_storage
-    temp_storage -->|"read"| python
-    events -->|"merge"| python
-    markdown -->|"parse"| python
-    python -->|"generate"| html
-    html -->|"open"| browser
+    subagents -->|"write"| digest_json
+    digest_json -->|"read (step 2)"| digest_skill
     digest_skill -->|"send email"| resend
     resend -->|"deliver"| inbox
+    digest_json -->|"input"| python
+    events -->|"input"| python
+    markdown -->|"input"| python
+    python -->|"generates"| session_recap
+    python -->|"generates"| calendar_section
+    python -->|"generates"| kanban_section
+    python -->|"generates"| digest_section
+    session_recap -->|"merge"| html
+    calendar_section -->|"merge"| html
+    kanban_section -->|"merge"| html
+    digest_section -->|"merge"| html
+    html -->|"open"| browser
 
     classDef parent fill:#1a73e8,stroke:#1a73e8,color:#fff
     classDef subagent fill:#e8f0fe,stroke:#1a73e8,color:#202124
     classDef storage fill:#fef7e0,stroke:#e37400,color:#202124
     classDef external fill:#e6f4ea,stroke:#137333,color:#202124
     class user parent
-    class skill parent
+    class morning_skill parent
     class gmail_mcp external
     class calendar_mcp external
     class newsletters external
@@ -99,25 +109,77 @@ flowchart TB
     class markdown storage
     class digest_skill parent
     class subagents subagent
-    class temp_storage storage
+    class digest_json storage
     class python parent
+    class session_recap parent
+    class calendar_section external
+    class kanban_section parent
+    class digest_section parent
     class html parent
     class browser parent
     class resend external
     class inbox external
 ```
 
-**Data Flow**:
-- **Entry**: User invokes `/morning` skill
-- **Fetch**: Parallel fetch from Gmail (forums), Calendar (next 7 days), and Month Markdown
-- **Analyze**: `/newsletter-digest` skill spawns subagents to analyze each email in parallel
-- **Merge**: Python script combines newsletter digest JSON, calendar events, and kanban markdown into single HTML
-- **Output**: Static 40KB HTML file with dark gradient header, session recap, calendar, kanban board, and newsletter table
-- **Display**: File opened in default browser for instant viewing (zero additional API calls)
-- **Archive**: Dated copy saved to `calendar-projects/morning/morning-YYYY-MM-DD.html` for history
-- **Email**: Newsletter digest also sent to inbox via Resend API
+### Data Flow (Sequential & Parallel)
 
-**Color Legend**: 🔵 Blue = Orchestrator | 🔷 Light Blue = Subagents (parallel workers) | 🟡 Yellow = Storage (data sources, files) | 🟢 Green = External services (MCP, API, delivery)
+**Step 1: Entry & Delegation**
+- User invokes `/morning` skill
+- Skill delegates to `/newsletter-digest` for email analysis
+
+**Step 2: Parallel Data Fetch** (~3–5s)
+- Gmail MCP queries Forum tab (19+ newsletters)
+- Calendar MCP queries next 7 days
+- Month markdown file is read from disk
+- All three happen in parallel (non-blocking)
+
+**Step 3: Newsletter Analysis (Critical Path)** (~30–45s)
+- `/newsletter-digest` spawns 5-7 subagent batch for parallel analysis
+- Subagents analyze each email → extract topics, key stats, original link
+- Results written to `.tmp/digest.json`
+- **Bottleneck**: Subagent analysis is the longest-running phase
+
+**Step 4: Email Delivery (After Analysis)**
+- **Only after** subagents complete, `/newsletter-digest` reads `.tmp/digest.json`
+- Sends HTML digest email via Resend API
+- Email arrives in user's inbox
+
+**Step 5: HTML Generation (Parallel with Email)** (<100ms)
+- Python script reads three inputs:
+  - `.tmp/digest.json` (newsletter analysis)
+  - Calendar events (from MCP)
+  - Month markdown (kanban data)
+- Generates **five sections** of morning HTML:
+  1. **Session Recap** — Top 5 topics with token usage visualization (fixated format)
+  2. **Calendar** — Today's events + next 7 days
+  3. **Kanban Board** — 7 life domains × 3-week rolling horizon (parsed from markdown)
+  4. **Coffee Card** — Floating ☕ animation with WSJ quote
+  5. **Newsletter Digest** — Full HTML table with sender, summary, stats, links for all 19 emails
+
+**Step 6: Output & Display** (~10s)
+- Complete 40KB HTML file written to `.claude/skills/morning/morning-ritual.html`
+- Dated copy archived to `calendar-projects/morning/morning-YYYY-MM-DD.html`
+- File opened in default browser via `open` command
+- Render time: <100ms (all data pre-baked, zero additional API calls)
+
+### Key Design Notes
+
+🔴 **Email Sending Happens After Analysis** — Not in parallel:
+- Subagents complete → `.tmp/digest.json` written
+- `/newsletter-digest` **reads** that result file
+- **Then** sends HTML email via Resend
+- Ensures email contains up-to-date analysis, no race conditions
+
+💾 **Session Recap is Generated by Python** — Not fetched from MCP:
+- Summarizes past 5 days: projects built, discussions, token estimates
+- Format is **fixated** to prevent drift (H3 with 💻 emoji, table structure, bar charts)
+- Only data changes; structure never changes across runs
+
+🎨 **Color Legend**:
+- 🔵 **Blue** — Orchestrator (main skill entry points)
+- 🔷 **Light Blue** — Subagents (parallel workers)
+- 🟡 **Yellow** — Storage (data sources, files, temp JSON)
+- 🟢 **Green** — External services (MCP, API, delivery)
 
 See [DATA_ARCHITECTURE.md](DATA_ARCHITECTURE.md) for detailed component breakdown and data platform documentation.
 
