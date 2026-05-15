@@ -98,11 +98,14 @@ Email Newsletters         Calendar Events         Monthly Markdown
 ✅ **Fully automated** — 7 AM daily or on-demand  
 ✅ **60–80 second total latency** — newsletter analysis is the critical path  
 ✅ **Zero credentials exposed** — uses MCP OAuth + environment variables  
-✅ **Static HTML output** — 40KB file loads instantly  
-✅ **Kanban board** — 7 domains × 3 weeks, color-coded, auto-generated from markdown  
-✅ **Newsletter digest** — 19+ analyzed newsletters embedded in HTML  
+✅ **Static HTML output** — 40KB file loads instantly, zero additional API calls  
+✅ **Session Recap** — Top 5 topics with proportional token bars (fixated format for consistency)
+✅ **Kanban board** — 7 domains × 3 weeks, color-coded, auto-generated from month markdown  
+✅ **Newsletter digest** — 19+ analyzed newsletters with full HTML formatting embedded  
 ✅ **Calendar context** — today + next 7 days visible at a glance  
+✅ **Coffee Card** — Morning ritual theme (☕ floating animation, "20 minutes with WSJ")
 ✅ **Production-ready** — runs daily without manual intervention  
+✅ **Dynamic markdown parsing** — Auto-detects month file and extracts all domains with tasks  
 
 ## Architecture
 
@@ -126,6 +129,7 @@ Email Newsletters         Calendar Events         Monthly Markdown
 
 - **[SETUP.md](SETUP.md)** — Step-by-step configuration guide
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — Technical deep dive (kanban algorithm, subagent batching, performance breakdown)
+- **[DATA_ARCHITECTURE.md](DATA_ARCHITECTURE.md)** — Data sources, platforms, and processing pipeline with Mermaid diagram
 - **[EXECUTIVE_SUMMARY.md](EXECUTIVE_SUMMARY.md)** — Business value and ROI
 
 ## Files
