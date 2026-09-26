@@ -1,0 +1,40 @@
+# Credentials & Secrets
+.env
+.env.local
+credentials.json
+token_*.json
+gmail_accounts.json
+*.key
+*.pem
+
+# Temporary & Cache
+.tmp/
+*.tmp
+.cache/
+*.pyc
+__pycache__/
+.pytest_cache/
+
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Session & Local State
+*.session
+.claude/settings.local.json
+
+# Month-specific data (DO NOT COMMIT PERSONAL TASKS)
+calendar-projects/**/*.md
+!calendar-projects/.gitkeep
+
+# Generated output (optional - you may want to track these)
+# .claude/skills/morning/morning-ritual.html
+# .tmp/newsletter_digest_*.html
